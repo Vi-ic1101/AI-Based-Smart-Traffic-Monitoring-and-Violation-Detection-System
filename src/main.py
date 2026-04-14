@@ -1,11 +1,12 @@
 import argparse
 import cv2
+import os
+import sys
 from tracker import VehicleTracker
 from counter import VehicleCounter
 from visualizer import Visualizer
 from violations import ViolationDetector
 from dashboard import DashboardData
-import streamlit as st
 
 # Paths
 default_video_path = "./videos/input/Road traffic video for object recognition.mp4"
@@ -25,7 +26,16 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--source-type", choices=["video", "camera", "rtsp"], default="video")
 parser.add_argument("--source", default=default_video_path)
 parser.add_argument("--state-file", default="./data/dashboard_state.json")
+parser.add_argument("--evidence-enabled", action="store_true", help="Capture evidence frames only when enabled")
+parser.add_argument("--log-file", default=None, help="Optional backend log file path")
 args = parser.parse_args()
+
+if args.log_file:
+    log_path = os.path.abspath(args.log_file)
+    os.makedirs(os.path.dirname(log_path), exist_ok=True)
+    log_target = open(log_path, "a", encoding="utf-8")
+    sys.stdout = log_target
+    sys.stderr = log_target
 
 if args.source_type == "camera":
     cap = cv2.VideoCapture(int(args.source))
@@ -47,7 +57,8 @@ fps = int(cap.get(cv2.CAP_PROP_FPS)) or 20
 violation_detector = ViolationDetector(
     fps,
     speed_threshold_kmh=80,
-    meters_per_pixel=0.05
+    meters_per_pixel=0.05,
+    evidence_enabled=args.evidence_enabled
 )
 out = cv2.VideoWriter(
     output_path,

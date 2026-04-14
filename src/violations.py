@@ -29,10 +29,11 @@ class ViolationDetector:
 
         print(f"✅ Violations saved to {filename}")
 
-    def __init__(self, fps, speed_threshold_kmh=80, meters_per_pixel=0.05, evidence_dir="./evidence"):
+    def __init__(self, fps, speed_threshold_kmh=80, meters_per_pixel=0.05, evidence_dir="./evidence", evidence_enabled=True):
         self.fps = fps
         self.speed_threshold_kmh = speed_threshold_kmh
         self.meters_per_pixel = meters_per_pixel
+        self.evidence_enabled = evidence_enabled
 
         self.prev_positions = {}
         self.prev_time = {}
@@ -49,7 +50,7 @@ class ViolationDetector:
         self.recent_violations = []
 
     def _save_evidence(self, track_id, vehicle_type, violation_type, frame, bbox):
-        if frame is None or bbox is None:
+        if not self.evidence_enabled or frame is None or bbox is None:
             return None, None
 
         x1, y1, x2, y2 = bbox
