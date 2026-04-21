@@ -129,24 +129,24 @@ if args.mode == "demo":
         print(f"❌ Video file not found: {source}")
         sys.exit(1)
     cap = cv2.VideoCapture(source)
-    print(f"✅ Opened video file: {source}")
+    print(f" Opened video file: {source}")
 elif args.source_type == "camera":
     try:
         camera_id = int(args.source)
         cap = cv2.VideoCapture(camera_id)
-        print(f"✅ Connected to camera {camera_id}")
+        print(f" Connected to camera {camera_id}")
     except ValueError:
         print(f"❌ Invalid camera ID: {args.source}")
         sys.exit(1)
 elif args.source_type == "rtsp":
     cap = cv2.VideoCapture(source)
-    print(f"✅ Connecting to RTSP stream...")
+    print(f" Connecting to RTSP stream...")
 else:  # video file or real-time YouTube source
     if args.mode == "demo" and not os.path.exists(source):
         print(f"❌ Video file not found: {source}")
         sys.exit(1)
     cap = cv2.VideoCapture(source)
-    print(f"✅ Opened video source: {source}")
+    print(f" Opened video source: {source}")
 
 if not cap.isOpened():
     raise RuntimeError(f"Unable to open source: {args.source_type} -> {source}")
@@ -218,7 +218,7 @@ while True:
         
         # Check if max frames reached (useful for testing live streams)
         if frame_count >= max_frames:
-            print(f"✅ Reached max frame limit ({max_frames} frames).")
+            print(f" Reached max frame limit ({max_frames} frames).")
             break
 
     if frame is None:
@@ -357,17 +357,17 @@ while True:
 
 cap.release()
 if args.source_type == "camera":
-    print("✅ Camera disconnected.")
+    print(" Camera disconnected.")
 elif args.source_type == "rtsp":
-    print("✅ RTSP stream disconnected.")
+    print(" RTSP stream disconnected.")
 else:
-    print("✅ Video file closed.")
+    print(" Video file closed.")
 
 out.release()
 cv2.destroyAllWindows()
 
 print("=" * 80)
-print(f"✅ PROCESSING COMPLETE!")
+print(f" PROCESSING COMPLETE!")
 print(f"   Frames Processed: {frame_count}")
 print(f"   Total Vehicles Detected: {counter.get_count()}")
 print(f"   Output Video: {output_path}")
