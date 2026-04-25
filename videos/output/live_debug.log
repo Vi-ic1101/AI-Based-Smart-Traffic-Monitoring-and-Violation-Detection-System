@@ -1,0 +1,84 @@
+2026-04-25 21:56:04,388 - INFO - ================================================================================
+2026-04-25 21:56:04,389 - INFO - LIVE STREAM TRAFFIC MONITORING - REAL-TIME MODE
+2026-04-25 21:56:04,389 - INFO - ================================================================================
+2026-04-25 21:56:04,393 - INFO -    Original URL: https://www.youtube.com/watch?v=1xl0hX-nF2E
+2026-04-25 21:56:04,393 - INFO - Attempting to resolve YouTube URL: https://www.youtube.com/watch?v=1xl0hX-nF2E
+2026-04-25 21:56:05,158 - INFO - Extracting stream info from YouTube...
+2026-04-25 21:56:10,546 - INFO - Found 6 formats
+2026-04-25 21:56:10,547 - DEBUG -   Format 0: height=1080, has_url=True
+2026-04-25 21:56:10,547 - DEBUG -   Format 1: height=720, has_url=True
+2026-04-25 21:56:10,548 - DEBUG -   Format 2: height=480, has_url=True
+2026-04-25 21:56:10,551 - INFO -    Direct URL: https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1777155970/ei/IuvsafqYDsXD1_oP24_ImQc/ip/122.183.58.132/id/1xl0hX-nF2E.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/rqh/1/hls_chunk_host/rr5---sn-ci5gup-cx3e.googlevideo.com/xpc/EgVo2aDSNQ%3D%3D/bui/AUUZDGIU3Qn9CmOicauuQuj7_DMjFWoXZXGbAgadFdoW4aiAJTOF4MGnGZB2s77u9rCx4-HJGY5Yoh1o/spc/jlWavZNnjOAEUW0zSQiiMAoulL-bIXgjwUthtLRPJhsOIvk9VA/vprv/1/reg/0/playlist_type/DVR/initcwndbps/1481250/met/1777134370,/mh/4b/mm/44/mn/sn-ci5gup-cx3e/ms/lva/mv/m/mvi/5/pl/24/rms/lva,lva/dover/11/pacing/0/keepalive/yes/fexp/51565115,51565682/mt/1777134033/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,sgoap,sgovp,rqh,xpc,bui,spc,vprv,reg,playlist_type/sig/AHEqNM4wRgIhAP9qPcFSjxmhfvt6mCFlFolGtvXyUwyPaA6op77oP__qAiEAihmWHiTuzD2fF_bbp7iR_T_Y1h2Qv3FrabWRNKf3dgY%3D/lsparams/hls_chunk_host,initcwndbps,met,mh,mm,mn,ms,mv,mvi,pl,rms/lsig/APaTxxMwRQIhAL6wwt5DgeqeSKsiPhrwltzO8E9OJH-OmOj3V-3Jh8pQAiB-j4CXDiI7np06uRmZFtW15-cBmAbO0MjooKbN3YVqpg%3D%3D/playlist/index.m3u8
+2026-04-25 21:56:10,551 - INFO - Initializing video capture...
+2026-04-25 21:56:19,972 - INFO - Attempting to connect to stream: https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1777155970/ei/IuvsafqYDsXD1_oP24_ImQc/ip/122.183.58.132/id/1xl0hX-nF2E.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/rqh/1/hls_chunk_host/rr5---sn-ci5gup-cx3e.googlevideo.com/xpc/EgVo2aDSNQ%3D%3D/bui/AUUZDGIU3Qn9CmOicauuQuj7_DMjFWoXZXGbAgadFdoW4aiAJTOF4MGnGZB2s77u9rCx4-HJGY5Yoh1o/spc/jlWavZNnjOAEUW0zSQiiMAoulL-bIXgjwUthtLRPJhsOIvk9VA/vprv/1/reg/0/playlist_type/DVR/initcwndbps/1481250/met/1777134370,/mh/4b/mm/44/mn/sn-ci5gup-cx3e/ms/lva/mv/m/mvi/5/pl/24/rms/lva,lva/dover/11/pacing/0/keepalive/yes/fexp/51565115,51565682/mt/1777134033/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,sgoap,sgovp,rqh,xpc,bui,spc,vprv,reg,playlist_type/sig/AHEqNM4wRgIhAP9qPcFSjxmhfvt6mCFlFolGtvXyUwyPaA6op77oP__qAiEAihmWHiTuzD2fF_bbp7iR_T_Y1h2Qv3FrabWRNKf3dgY%3D/lsparams/hls_chunk_host,initcwndbps,met,mh,mm,mn,ms,mv,mvi,pl,rms/lsig/APaTxxMwRQIhAL6wwt5DgeqeSKsiPhrwltzO8E9OJH-OmOj3V-3Jh8pQAiB-j4CXDiI7np06uRmZFtW15-cBmAbO0MjooKbN3YVqpg%3D%3D/playlist/index.m3u8
+2026-04-25 21:56:20,313 - INFO - ================================================================================
+2026-04-25 21:56:20,313 - INFO - Violations Tracked: Overspeed | Parking | Red-Light | Lane Violations
+2026-04-25 21:56:20,314 - INFO - Processing started...
+2026-04-25 21:56:20,314 - INFO - ================================================================================
+2026-04-25 21:56:25,916 - INFO - [000030 frames] Vehicles: 0 | Congestion: N/A
+2026-04-25 21:56:39,398 - INFO - [000060 frames] Vehicles: 0 | Congestion: N/A
+2026-04-25 21:56:43,777 - INFO - [000090 frames] Vehicles: 0 | Congestion: N/A
+2026-04-25 21:56:49,329 - INFO - ================================================================================
+2026-04-25 21:56:49,331 - INFO -    Frames Processed: 104
+2026-04-25 21:56:49,331 - INFO -    Total Vehicles Detected: 0
+2026-04-25 21:56:49,332 - INFO -    Output Video: ./videos/output/live_20260425_215620.mp4
+2026-04-25 21:56:49,334 - INFO -    Violations CSV: ./violations.csv
+2026-04-25 21:56:49,334 - INFO - ================================================================================
+2026-04-25 21:56:49,335 - INFO - Debug log: ./videos/output/live_debug.log
+2026-04-25 21:57:01,547 - INFO - ================================================================================
+2026-04-25 21:57:01,547 - INFO - LIVE STREAM TRAFFIC MONITORING - REAL-TIME MODE
+2026-04-25 21:57:01,547 - INFO - ================================================================================
+2026-04-25 21:57:01,550 - INFO -    Original URL: https://www.youtube.com/watch?v=gCKAn2q35Dw
+2026-04-25 21:57:01,550 - INFO - Attempting to resolve YouTube URL: https://www.youtube.com/watch?v=gCKAn2q35Dw
+2026-04-25 21:57:02,135 - INFO - Extracting stream info from YouTube...
+2026-04-25 21:57:06,400 - INFO - Found 6 formats
+2026-04-25 21:57:06,400 - DEBUG -   Format 0: height=1080, has_url=True
+2026-04-25 21:57:06,401 - DEBUG -   Format 1: height=720, has_url=True
+2026-04-25 21:57:06,401 - DEBUG -   Format 2: height=480, has_url=True
+2026-04-25 21:57:06,405 - INFO -    Direct URL: https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1777156025/ei/WevsabfqFoKh4t4Pq9Oc4AM/ip/122.183.58.132/id/gCKAn2q35Dw.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/rqh/1/hls_chunk_host/rr2---sn-ci5gup-cx3l.googlevideo.com/xpc/EgVo2aDSNQ%3D%3D/bui/AUUZDGIb4d9YnnGt09pnpgSoD182TbsMGWWnPb9A16mhUaNVwJTyIrIm0igzI4ZaQXDUcV9tmLa-2wKz/spc/jlWavcwoO9Xce0raCernK5RPeI56RvEScEnLNP2LIMfee8mRwA/vprv/1/reg/0/playlist_type/DVR/initcwndbps/1413750/met/1777134426,/mh/ZX/mm/44/mn/sn-ci5gup-cx3l/ms/lva/mv/m/mvi/2/pl/24/rms/lva,lva/dover/11/pacing/0/keepalive/yes/fexp/51565116,51565681/mt/1777134033/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,sgoap,sgovp,rqh,xpc,bui,spc,vprv,reg,playlist_type/sig/AHEqNM4wRQIgYMqbHzzD3lqo12oewH62YtY-IMtZe_PaAoBM4sce_iwCIQCPAGmu2N8eO6L7cHNLevB31fkl7KQOu_jcqYOEyZsRCA%3D%3D/lsparams/hls_chunk_host,initcwndbps,met,mh,mm,mn,ms,mv,mvi,pl,rms/lsig/APaTxxMwRgIhAOHjTrdQ5QDGxGoCX-YEU7ATf4SH_pXPUYTkMKafGRBLAiEA9ML-KxYi9FrrywA1J5TDNoEqjZoIPYtTcbSYzBUAbqo%3D/playlist/index.m3u8
+2026-04-25 21:57:06,405 - INFO - Initializing video capture...
+2026-04-25 21:57:21,922 - INFO - Attempting to connect to stream: https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1777156025/ei/WevsabfqFoKh4t4Pq9Oc4AM/ip/122.183.58.132/id/gCKAn2q35Dw.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/rqh/1/hls_chunk_host/rr2---sn-ci5gup-cx3l.googlevideo.com/xpc/EgVo2aDSNQ%3D%3D/bui/AUUZDGIb4d9YnnGt09pnpgSoD182TbsMGWWnPb9A16mhUaNVwJTyIrIm0igzI4ZaQXDUcV9tmLa-2wKz/spc/jlWavcwoO9Xce0raCernK5RPeI56RvEScEnLNP2LIMfee8mRwA/vprv/1/reg/0/playlist_type/DVR/initcwndbps/1413750/met/1777134426,/mh/ZX/mm/44/mn/sn-ci5gup-cx3l/ms/lva/mv/m/mvi/2/pl/24/rms/lva,lva/dover/11/pacing/0/keepalive/yes/fexp/51565116,51565681/mt/1777134033/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,sgoap,sgovp,rqh,xpc,bui,spc,vprv,reg,playlist_type/sig/AHEqNM4wRQIgYMqbHzzD3lqo12oewH62YtY-IMtZe_PaAoBM4sce_iwCIQCPAGmu2N8eO6L7cHNLevB31fkl7KQOu_jcqYOEyZsRCA%3D%3D/lsparams/hls_chunk_host,initcwndbps,met,mh,mm,mn,ms,mv,mvi,pl,rms/lsig/APaTxxMwRgIhAOHjTrdQ5QDGxGoCX-YEU7ATf4SH_pXPUYTkMKafGRBLAiEA9ML-KxYi9FrrywA1J5TDNoEqjZoIPYtTcbSYzBUAbqo%3D/playlist/index.m3u8
+2026-04-25 21:57:22,352 - INFO - ================================================================================
+2026-04-25 21:57:22,352 - INFO - Violations Tracked: Overspeed | Parking | Red-Light | Lane Violations
+2026-04-25 21:57:22,352 - INFO - Processing started...
+2026-04-25 21:57:22,352 - INFO - ================================================================================
+2026-04-25 21:57:28,050 - INFO - [000030 frames] Vehicles: 0 | Congestion: N/A
+2026-04-25 21:57:32,216 - INFO - [000060 frames] Vehicles: 0 | Congestion: N/A
+2026-04-25 21:57:36,353 - INFO - [000090 frames] Vehicles: 0 | Congestion: N/A
+2026-04-25 21:57:40,639 - INFO - [000120 frames] Vehicles: 0 | Congestion: N/A
+2026-04-25 21:57:41,501 - INFO - ================================================================================
+2026-04-25 21:57:41,503 - INFO -    Frames Processed: 126
+2026-04-25 21:57:41,503 - INFO -    Total Vehicles Detected: 0
+2026-04-25 21:57:41,503 - INFO -    Output Video: ./videos/output/live_20260425_215722.mp4
+2026-04-25 21:57:41,504 - INFO -    Violations CSV: ./violations.csv
+2026-04-25 21:57:41,504 - INFO - ================================================================================
+2026-04-25 21:57:41,504 - INFO - Debug log: ./videos/output/live_debug.log
+2026-04-25 22:13:41,845 - INFO - ================================================================================
+2026-04-25 22:13:41,846 - INFO - LIVE STREAM TRAFFIC MONITORING - REAL-TIME MODE
+2026-04-25 22:13:41,846 - INFO - ================================================================================
+2026-04-25 22:13:41,850 - INFO -    Original URL: https://www.youtube.com/watch?v=1xl0hX-nF2E
+2026-04-25 22:13:41,851 - INFO - Attempting to resolve YouTube URL: https://www.youtube.com/watch?v=1xl0hX-nF2E
+2026-04-25 22:13:42,773 - INFO - Extracting stream info from YouTube...
+2026-04-25 22:13:46,823 - INFO - Found 6 formats
+2026-04-25 22:13:46,823 - DEBUG -   Format 0: height=1080, has_url=True
+2026-04-25 22:13:46,823 - DEBUG -   Format 1: height=720, has_url=True
+2026-04-25 22:13:46,823 - DEBUG -   Format 2: height=480, has_url=True
+2026-04-25 22:13:46,827 - INFO -    Direct URL: https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1777157026/ei/Qu_saaL-CYqL3LUPjcrkwQM/ip/122.183.58.132/id/1xl0hX-nF2E.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/rqh/1/hls_chunk_host/rr5---sn-ci5gup-cx3e.googlevideo.com/xpc/EgVo2aDSNQ%3D%3D/bui/AUUZDGKWOQ2zZ2Th5CNI_5EIYBVFVWTUS97L459sA5PcXZRfcTLO-Ep3qhwBFSmGE5cuTIhWKXGgPrDI/spc/jlWavQyhGkzAHCePRIgRhop3VqaJp_esOYznqETR31SuL2tc5Q/vprv/1/reg/0/playlist_type/DVR/initcwndbps/1417500/met/1777135427,/mh/4b/mm/44/mn/sn-ci5gup-cx3e/ms/lva/mv/m/mvi/5/pcm2cms/yes/pl/24/rms/lva,lva/dover/11/pacing/0/keepalive/yes/fexp/51565116,51565682/mt/1777134993/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,sgoap,sgovp,rqh,xpc,bui,spc,vprv,reg,playlist_type/sig/AHEqNM4wRAIgdOJsOh0elhJcsHhsSl4yMMpbfH4edXc7V7wISqERAOMCICKNSrWJXfx4f00ETgue1atDh2gdSGn_fzWvv-ZYfw6d/lsparams/hls_chunk_host,initcwndbps,met,mh,mm,mn,ms,mv,mvi,pcm2cms,pl,rms/lsig/APaTxxMwRQIgC1eZEKJQqe9iBxBcxGCcszLMcl08k5KhneB91PlGE0ECIQDDh5MGTj2EhhV87xRfl6i7Piwn2lOCpNq0xxF6DZmldg%3D%3D/playlist/index.m3u8
+2026-04-25 22:13:46,827 - INFO - Initializing video capture...
+2026-04-25 22:13:56,842 - INFO - Attempting to connect to stream: https://manifest.googlevideo.com/api/manifest/hls_playlist/expire/1777157026/ei/Qu_saaL-CYqL3LUPjcrkwQM/ip/122.183.58.132/id/1xl0hX-nF2E.1/itag/96/source/yt_live_broadcast/requiressl/yes/ratebypass/yes/live/1/sgoap/gir%3Dyes%3Bitag%3D140/sgovp/gir%3Dyes%3Bitag%3D137/rqh/1/hls_chunk_host/rr5---sn-ci5gup-cx3e.googlevideo.com/xpc/EgVo2aDSNQ%3D%3D/bui/AUUZDGKWOQ2zZ2Th5CNI_5EIYBVFVWTUS97L459sA5PcXZRfcTLO-Ep3qhwBFSmGE5cuTIhWKXGgPrDI/spc/jlWavQyhGkzAHCePRIgRhop3VqaJp_esOYznqETR31SuL2tc5Q/vprv/1/reg/0/playlist_type/DVR/initcwndbps/1417500/met/1777135427,/mh/4b/mm/44/mn/sn-ci5gup-cx3e/ms/lva/mv/m/mvi/5/pcm2cms/yes/pl/24/rms/lva,lva/dover/11/pacing/0/keepalive/yes/fexp/51565116,51565682/mt/1777134993/sparams/expire,ei,ip,id,itag,source,requiressl,ratebypass,live,sgoap,sgovp,rqh,xpc,bui,spc,vprv,reg,playlist_type/sig/AHEqNM4wRAIgdOJsOh0elhJcsHhsSl4yMMpbfH4edXc7V7wISqERAOMCICKNSrWJXfx4f00ETgue1atDh2gdSGn_fzWvv-ZYfw6d/lsparams/hls_chunk_host,initcwndbps,met,mh,mm,mn,ms,mv,mvi,pcm2cms,pl,rms/lsig/APaTxxMwRQIgC1eZEKJQqe9iBxBcxGCcszLMcl08k5KhneB91PlGE0ECIQDDh5MGTj2EhhV87xRfl6i7Piwn2lOCpNq0xxF6DZmldg%3D%3D/playlist/index.m3u8
+2026-04-25 22:13:57,285 - INFO - ================================================================================
+2026-04-25 22:13:57,285 - INFO - Violations Tracked: Overspeed | Parking | Red-Light | Lane Violations
+2026-04-25 22:13:57,285 - INFO - Processing started...
+2026-04-25 22:13:57,285 - INFO - ================================================================================
+2026-04-25 22:14:12,848 - INFO - [000030 frames] Vehicles: 1 | Congestion: N/A
+2026-04-25 22:14:52,673 - INFO - [000060 frames] Vehicles: 3 | Congestion: N/A
+2026-04-25 22:15:06,091 - INFO - [000090 frames] Vehicles: 3 | Congestion: N/A
+2026-04-25 22:15:44,448 - INFO - [000120 frames] Vehicles: 4 | Congestion: N/A
+2026-04-25 22:15:57,062 - INFO - [000150 frames] Vehicles: 4 | Congestion: N/A
+2026-04-25 22:16:17,546 - INFO - [000180 frames] Vehicles: 4 | Congestion: N/A
+2026-04-25 22:16:28,378 - INFO - [000210 frames] Vehicles: 4 | Congestion: N/A
+2026-04-25 22:17:01,240 - INFO - [000240 frames] Vehicles: 4 | Congestion: N/A
+2026-04-25 22:17:16,917 - INFO - [000270 frames] Vehicles: 5 | Congestion: N/A
+2026-04-25 22:17:42,623 - INFO - [000300 frames] Vehicles: 5 | Congestion: N/A
+2026-04-25 22:17:51,617 - INFO - [000330 frames] Vehicles: 5 | Congestion: N/A
+2026-04-25 22:18:06,602 - INFO - [000360 frames] Vehicles: 5 | Congestion: N/A

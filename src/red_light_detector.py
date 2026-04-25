@@ -2,22 +2,40 @@ import cv2
 import numpy as np
 from collections import defaultdict, deque
 
+try:
+    from ultralytics import YOLO
+    YOLO_AVAILABLE = True
+except ImportError:
+    YOLO_AVAILABLE = False
+
 class RedLightDetector:
     """
     Detects red-light jumping violations.
-    Uses color-based traffic light detection and tracks vehicle crossing behavior.
+    Uses YOLO for traffic light detection with HSV color analysis fallback.
     """
     
-    def __init__(self, frame_width=1150, frame_height=840):
+    def __init__(self, frame_width=1150, frame_height=840, model_path="models/yolov8n.pt"):
         """
         Initialize red-light detector.
         
         Args:
             frame_width: Frame width in pixels
             frame_height: Frame height in pixels
+            model_path: Path to YOLO model for traffic light detection
         """
         self.frame_width = frame_width
         self.frame_height = frame_height
+        
+        # YOLO model for traffic light detection
+        self.yolo_model = None
+        self.use_yolo = False
+        if YOLO_AVAILABLE:
+            try:
+                self.yolo_model = YOLO(model_path)
+                self.use_yolo = True
+                print("   ✅ YOLO loaded for traffic light detection")
+            except Exception as e:
+                print(f"   ⚠️  YOLO loading failed ({e}), using HSV fallback")
         
         # Define traffic light region (typically top area of frame)
         # Can be customized based on actual camera position
@@ -32,16 +50,19 @@ class RedLightDetector:
         self.detected_traffic_lights = []
         
         # Track light state and history
-        self.light_state = 'green'  # green, red, yellow, unknown
+        self.light_state = 'green'  # green, red, yellow
         self.light_state_history = []
         self.state_change_frames = 0
         # Temporal smoothing buffer for stability (require 2 consecutive detections)
         self._recent_states = deque(maxlen=5)
         self._state_confirm_required = 2
         # Brightness and area thresholds for robust detection
-        self._brightness_threshold = 140
-        self._area_ratio_threshold = 0.01
-        self._min_pixel_count = 60
+        self._brightness_threshold = 120
+        self._area_ratio_threshold = 0.008
+        self._min_pixel_count = 40
+        
+        # YOLO confidence threshold
+        self._yolo_conf_threshold = 0.5
         
         # Track vehicles crossing the stop line
         self.stop_line_y = int(frame_height * 0.5)  # Usually middle of frame
@@ -56,14 +77,113 @@ class RedLightDetector:
         
     def detect_light_color(self, frame):
         """
-        Detect traffic light color using HSV color space with temporal smoothing.
-        Uses detected traffic light regions if available, otherwise uses default region.
+        Detect traffic light color using YOLO detection with HSV color analysis.
+        Prioritizes YOLO detection, falls back to HSV, defaults to green if uncertain.
         
         Args:
             frame: Input frame (BGR format)
             
         Returns:
-            light_state: 'red', 'green', 'yellow', or 'unknown'
+            light_state: 'red' or 'green' (never 'unknown')
+        """
+        detection = 'green'  # Default fallback
+        
+        # Try YOLO detection first if available
+        if self.use_yolo and self.yolo_model is not None:
+            detection = self._detect_with_yolo(frame)
+        
+        # If YOLO didn't work or unavailable, use HSV detection
+        if detection == 'green':
+            detection = self._detect_with_hsv(frame)
+        
+        # Temporal smoothing: require multiple matching detections before switching
+        self._recent_states.append(detection)
+        if self._recent_states.count(detection) >= self._state_confirm_required:
+            self.light_state = detection
+        
+        return self.light_state
+    
+    def _detect_with_yolo(self, frame):
+        """
+        Detect traffic light using YOLO model.
+        
+        Args:
+            frame: Input frame (BGR format)
+            
+        Returns:
+            light_state: 'red', 'green', or 'green' (default)
+        """
+        try:
+            # Run YOLO inference
+            results = self.yolo_model(frame, conf=self._yolo_conf_threshold, verbose=False)
+            
+            if not results or len(results) == 0:
+                return 'green'
+            
+            result = results[0]
+            
+            # Filter detections for traffic light class
+            # YOLO traffic light class ID is typically 9 or we can search by name
+            traffic_lights = []
+            for box in result.boxes:
+                conf = float(box.conf)
+                class_id = int(box.cls)
+                
+                # Class 9 in COCO is traffic light, but verify
+                # Alternative: check class name
+                if hasattr(result, 'names'):
+                    class_name = result.names.get(class_id, '')
+                    if 'traffic' in class_name.lower() or 'light' in class_name.lower() or class_id == 9:
+                        x1, y1, x2, y2 = map(int, box.xyxy[0])
+                        traffic_lights.append({
+                            'bbox': (x1, y1, x2, y2),
+                            'conf': conf,
+                            'class_id': class_id
+                        })
+                elif class_id == 9:  # Fallback: check class ID
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    traffic_lights.append({
+                        'bbox': (x1, y1, x2, y2),
+                        'conf': conf,
+                        'class_id': class_id
+                    })
+            
+            if not traffic_lights:
+                return 'green'
+            
+            # Analyze detected traffic lights for color
+            color_votes = {'red': 0, 'green': 0}
+            
+            for tl in traffic_lights:
+                x1, y1, x2, y2 = tl['bbox']
+                roi = frame[max(0, y1):min(frame.shape[0], y2), 
+                           max(0, x1):min(frame.shape[1], x2)]
+                
+                if roi.size == 0:
+                    continue
+                
+                # Analyze HSV in detected region
+                color = self._analyze_hsv_colors(roi)
+                if color in color_votes:
+                    color_votes[color] += 1
+            
+            # Return majority color
+            if color_votes['red'] > color_votes['green']:
+                return 'red'
+            else:
+                return 'green'
+        
+        except Exception as e:
+            print(f"   ⚠️  YOLO detection error: {e}")
+            return 'green'
+    
+    def _detect_with_hsv(self, frame):
+        """
+        Detect traffic light color using HSV analysis.
+        Uses detected traffic light regions if available, otherwise uses default region.
+        
+        Returns:
+            light_state: 'red' or 'green' (never 'unknown')
         """
         # Use detected traffic lights if available
         if self.detected_traffic_lights:
@@ -72,12 +192,11 @@ class RedLightDetector:
             # Fallback to default region
             detection = self._detect_from_region(frame, self.light_region)
         
-        # Temporal smoothing: require multiple matching detections before switching
-        self._recent_states.append(detection)
-        if self._recent_states.count(detection) >= self._state_confirm_required:
-            self.light_state = detection
+        # Never return unknown - default to green
+        if detection == 'unknown':
+            return 'green'
         
-        return self.light_state
+        return detection
     
     def _detect_from_region(self, frame, region):
         """Detect light color from a single region"""
@@ -88,7 +207,7 @@ class RedLightDetector:
         ]
         
         if roi.size == 0:
-            return 'unknown'
+            return 'green'
         
         # Create circular mask around center to focus on light bulb
         h, w = roi.shape[:2]
@@ -102,7 +221,7 @@ class RedLightDetector:
     
     def _detect_from_regions(self, frame, traffic_lights):
         """Detect light color from multiple detected traffic light positions"""
-        detected_colors = {'red': 0, 'green': 0, 'yellow': 0, 'unknown': 0}
+        detected_colors = {'red': 0, 'green': 0, 'yellow': 0}
         
         for tl in traffic_lights:
             x, y, radius = tl["x"], tl["y"], tl["radius"]
@@ -125,30 +244,39 @@ class RedLightDetector:
             cv2.circle(mask, (cx_rel, cy_rel), int(radius) + 3, 255, -1)
             
             color = self._analyze_hsv_colors(roi, mask=mask)
-            detected_colors[color] += 1
+            if color in detected_colors:
+                detected_colors[color] += 1
         
         # Return most frequently detected color among detected traffic lights
-        most_common = max(detected_colors, key=detected_colors.get)
-        if most_common == 'unknown' and detected_colors['red'] == 0 and detected_colors['green'] == 0:
-            return 'green'  # Default to green if no clear detection
-        return most_common
+        # Default to green if no clear detection
+        if detected_colors['red'] > 0 or detected_colors['green'] > 0:
+            return 'red' if detected_colors['red'] > detected_colors['green'] else 'green'
+        
+        # If we detected yellow, treat as caution but lean green
+        return 'green'
     
     def _analyze_hsv_colors(self, roi, mask=None):
         """
         Analyze HSV colors in a region of interest with an optional circular mask.
         Uses brightness filtering and area ratio checks to avoid background bias.
         Prevents truck brake lights and yellow backgrounds from causing false detections.
+        Never returns 'unknown' - defaults to 'green'.
         """
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
         
-        # Color ranges (tuned for saturated/bright light bulbs)
-        lower_red1 = np.array([0, 100, 120])
-        upper_red1 = np.array([10, 255, 255])
-        lower_red2 = np.array([170, 100, 120])
+        # Color ranges (tuned for saturated/bright light bulbs) - more tolerant
+        # Red: wraps around in HSV, so two ranges
+        lower_red1 = np.array([0, 80, 100])
+        upper_red1 = np.array([15, 255, 255])
+        lower_red2 = np.array([165, 80, 100])
         upper_red2 = np.array([180, 255, 255])
-        lower_green = np.array([35, 100, 120])
-        upper_green = np.array([85, 255, 255])
-        lower_yellow = np.array([20, 100, 120])
+        
+        # Green: broader range to catch various green tones
+        lower_green = np.array([30, 60, 100])
+        upper_green = np.array([90, 255, 255])
+        
+        # Yellow: for reference but we'll lean red/green
+        lower_yellow = np.array([15, 80, 100])
         upper_yellow = np.array([35, 255, 255])
         
         mask_red = cv2.inRange(hsv, lower_red1, upper_red1) | cv2.inRange(hsv, lower_red2, upper_red2)
@@ -178,8 +306,8 @@ class RedLightDetector:
         green_ratio = green_pixels / masked_area
         yellow_ratio = yellow_pixels / masked_area
         
-        counts = {'red': red_pixels, 'green': green_pixels, 'yellow': yellow_pixels}
         ratios = {'red': red_ratio, 'green': green_ratio, 'yellow': yellow_ratio}
+        counts = {'red': red_pixels, 'green': green_pixels, 'yellow': yellow_pixels}
         
         # Primary decision: require minimum ratio and minimum pixel count
         best = max(ratios, key=ratios.get)
@@ -195,15 +323,14 @@ class RedLightDetector:
         yellow_raw_cnt = cv2.countNonZero(yellow_raw)
         raw_total = red_raw_cnt + green_raw_cnt + yellow_raw_cnt
         
-        if raw_total == 0:
-            return 'unknown'
+        if raw_total > 0:
+            raw_norm = {'red': red_raw_cnt / raw_total, 'green': green_raw_cnt / raw_total, 'yellow': yellow_raw_cnt / raw_total}
+            raw_best = max(raw_norm, key=raw_norm.get)
+            if raw_norm[raw_best] > 0.5 and max(red_raw_cnt, green_raw_cnt, yellow_raw_cnt) > 30:
+                return raw_best
         
-        raw_norm = {'red': red_raw_cnt / raw_total, 'green': green_raw_cnt / raw_total, 'yellow': yellow_raw_cnt / raw_total}
-        raw_best = max(raw_norm, key=raw_norm.get)
-        if raw_norm[raw_best] > 0.6 and max(red_raw_cnt, green_raw_cnt, yellow_raw_cnt) > 50:
-            return raw_best
-        
-        return 'unknown'
+        # Default to green if uncertain
+        return 'green'
     
     def update(self, frame, vehicle_id, cx, cy, vehicle_type='car'):
         """
@@ -280,11 +407,10 @@ class RedLightDetector:
         color_map = {
             'red': (0, 0, 255),
             'green': (0, 255, 0),
-            'yellow': (0, 255, 255),
-            'unknown': (128, 128, 128)
+            'yellow': (0, 255, 255)
         }
         
-        color = color_map.get(self.light_state, (128, 128, 128))
+        color = color_map.get(self.light_state, (0, 255, 0))  # Default green
         
         # Draw rectangle around light detection region
         cv2.rectangle(

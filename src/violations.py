@@ -41,13 +41,17 @@ class ViolationDetector:
         self.violations = []
 
         self.stationary_start = {}
-        self.parking_threshold = 5
+        self.parking_threshold_seconds = 15
+        self.parking_threshold_pixels = 8
         self.smoothing_alpha = 0.25
         self.min_movement_pixels = 2
 
         self.evidence_dir = evidence_dir
         os.makedirs(self.evidence_dir, exist_ok=True)
         self.recent_violations = []
+        
+        self.last_overspeed_time = {}
+        self.parking_recorded = set()
 
     def _save_evidence(self, track_id, vehicle_type, violation_type, frame, bbox):
         if not self.evidence_enabled or frame is None or bbox is None:
@@ -78,18 +82,22 @@ class ViolationDetector:
         if len(self.recent_violations) > 10:
             self.recent_violations.pop()
 
-    def check_illegal_parking(self, track_id, cx, cy, vehicle_type=None, frame=None, bbox=None):
-        current_time = time.time()
+    def check_illegal_parking(self, track_id, cx, cy, vehicle_type=None, frame=None, bbox=None, frame_count=None):
+        if track_id in self.parking_recorded:
+            return True, None
+
+        current_time = time.time() if frame_count is None else frame_count / self.fps
+
         if track_id in self.prev_positions:
             prev_x, prev_y = self.prev_positions[track_id]
             distance = math.hypot(cx - prev_x, cy - prev_y)
 
-            if distance < 5:
+            if distance < self.parking_threshold_pixels:
                 if track_id not in self.stationary_start:
                     self.stationary_start[track_id] = current_time
                 else:
                     duration = current_time - self.stationary_start[track_id]
-                    if duration > self.parking_threshold:
+                    if duration > self.parking_threshold_seconds:
                         frame_path, crop_path = self._save_evidence(
                             track_id,
                             vehicle_type or "unknown",
@@ -97,15 +105,17 @@ class ViolationDetector:
                             frame,
                             bbox
                         )
+                        time_str = time.strftime("%H:%M:%S") if frame_count is None else f"{int(current_time // 3600):02d}:{int((current_time % 3600) // 60):02d}:{int(current_time % 60):02d}"
                         violation = {
                             "id": track_id,
                             "type": vehicle_type or "unknown",
                             "violation": "illegal_parking",
-                            "time": time.strftime("%H:%M:%S"),
+                            "time": time_str,
                             "frame_path": frame_path,
                             "crop_path": crop_path
                         }
                         self._record_violation(violation)
+                        self.parking_recorded.add(track_id)
                         print(f"Illegal Parking: ID {track_id} saved to {frame_path}")
                         return True, violation
             else:
@@ -113,9 +123,7 @@ class ViolationDetector:
 
         return False, None
 
-    def calculate_speed(self, track_id, cx, cy):
-        current_time = time.time()
-
+    def calculate_speed(self, track_id, cx, cy, current_time):
         if track_id in self.prev_positions and track_id in self.prev_time:
             prev_x, prev_y = self.prev_positions[track_id]
             prev_t = self.prev_time[track_id]
@@ -140,35 +148,43 @@ class ViolationDetector:
 
         return 0.0
 
-    def update(self, track_id, cx, cy, vehicle_type, frame=None, bbox=None):
+    def update(self, track_id, cx, cy, vehicle_type, frame=None, bbox=None, frame_count=None):
         if track_id == -1:
             return False, 0.0, None
+            
+        current_time = time.time() if frame_count is None else frame_count / self.fps
 
-        speed_kmh = self.calculate_speed(track_id, cx, cy)
+        speed_kmh = self.calculate_speed(track_id, cx, cy, current_time)
 
         self.prev_positions[track_id] = (cx, cy)
-        self.prev_time[track_id] = time.time()
+        self.prev_time[track_id] = current_time
 
         if speed_kmh > self.speed_threshold_kmh:
-            frame_path, crop_path = self._save_evidence(
-                track_id,
-                vehicle_type,
-                "overspeed",
-                frame,
-                bbox
-            )
-            violation = {
-                "id": track_id,
-                "type": vehicle_type,
-                "violation": "overspeed",
-                "speed_kmh": round(speed_kmh, 2),
-                "time": time.strftime("%H:%M:%S"),
-                "frame_path": frame_path,
-                "crop_path": crop_path
-            }
-            self._record_violation(violation)
-            print(f"Overspeed detected: ID {track_id} | Speed: {speed_kmh:.2f} km/h")
-            return True, speed_kmh, violation
+            last_time = self.last_overspeed_time.get(track_id, 0)
+            
+            # Use 5-second cooldown
+            if (current_time - last_time) > 5.0:
+                frame_path, crop_path = self._save_evidence(
+                    track_id,
+                    vehicle_type,
+                    "overspeed",
+                    frame,
+                    bbox
+                )
+                time_str = time.strftime("%H:%M:%S") if frame_count is None else f"{int(current_time // 3600):02d}:{int((current_time % 3600) // 60):02d}:{int(current_time % 60):02d}"
+                violation = {
+                    "id": track_id,
+                    "type": vehicle_type,
+                    "violation": "overspeed",
+                    "speed_kmh": round(speed_kmh, 2),
+                    "time": time_str,
+                    "frame_path": frame_path,
+                    "crop_path": crop_path
+                }
+                self._record_violation(violation)
+                self.last_overspeed_time[track_id] = current_time
+                print(f"Overspeed detected: ID {track_id} | Speed: {speed_kmh:.2f} km/h")
+                return True, speed_kmh, violation
 
         return False, speed_kmh, None
 
