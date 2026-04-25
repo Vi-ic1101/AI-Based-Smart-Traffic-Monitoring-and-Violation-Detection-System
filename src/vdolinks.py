@@ -1,6 +1,7 @@
 YOUTUBE_LIVE_STREAMS = {
     "fresno": "https://www.youtube.com/watch?v=1xl0hX-nF2E",
     "miami": "https://www.youtube.com/watch?v=gCKAn2q35Dw",
+    "jackson_hole":"https://www.youtube.com/live/1EiC9bvVGnk?si=iozim_5jQEUPcpof"
 }
 
 DEFAULT_YOUTUBE_STREAM_KEY = "fresno"

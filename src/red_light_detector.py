@@ -28,6 +28,9 @@ class RedLightDetector:
             'y2': int(frame_height * 0.15)
         }
         
+        # Detected traffic light regions (set by preprocessor)
+        self.detected_traffic_lights = []
+        
         # Track light state and history
         self.light_state = 'green'  # green, red, yellow, unknown
         self.light_state_history = []
@@ -37,10 +40,17 @@ class RedLightDetector:
         self.stop_line_y = int(frame_height * 0.5)  # Usually middle of frame
         self.vehicles_crossing = defaultdict(dict)
         self.red_light_violations = []
+    
+    def set_traffic_light_regions(self, traffic_lights):
+        """Set detected traffic light regions for analysis"""
+        self.detected_traffic_lights = traffic_lights
+        if traffic_lights:
+            print(f"   ✅ Red-Light Detector: Configured for {len(traffic_lights)} traffic lights")
         
     def detect_light_color(self, frame):
         """
         Detect traffic light color using HSV color space.
+        Uses detected traffic light regions if available, otherwise uses default region.
         
         Args:
             frame: Input frame (BGR format)
@@ -48,15 +58,55 @@ class RedLightDetector:
         Returns:
             light_state: 'red', 'green', 'yellow', or 'unknown'
         """
+        # Use detected traffic lights if available
+        if self.detected_traffic_lights:
+            return self._detect_from_regions(frame, self.detected_traffic_lights)
+        else:
+            # Fallback to default region
+            return self._detect_from_region(frame, self.light_region)
+    
+    def _detect_from_region(self, frame, region):
+        """Detect light color from a single region"""
         # Extract region of interest for traffic light
         roi = frame[
-            self.light_region['y1']:self.light_region['y2'],
-            self.light_region['x1']:self.light_region['x2']
+            region['y1']:region['y2'],
+            region['x1']:region['x2']
         ]
         
         if roi.size == 0:
             return 'unknown'
         
+        return self._analyze_hsv_colors(roi)
+    
+    def _detect_from_regions(self, frame, traffic_lights):
+        """Detect light color from multiple detected traffic light positions"""
+        detected_colors = {'red': 0, 'green': 0, 'yellow': 0, 'unknown': 0}
+        
+        for tl in traffic_lights:
+            x, y, radius = tl["x"], tl["y"], tl["radius"]
+            
+            # Extract circular region around traffic light
+            y1 = max(0, y - radius - 10)
+            y2 = min(frame.shape[0], y + radius + 10)
+            x1 = max(0, x - radius - 10)
+            x2 = min(frame.shape[1], x + radius + 10)
+            
+            roi = frame[y1:y2, x1:x2]
+            
+            if roi.size == 0:
+                continue
+            
+            color = self._analyze_hsv_colors(roi)
+            detected_colors[color] += 1
+        
+        # Return most frequently detected color
+        most_common = max(detected_colors, key=detected_colors.get)
+        if most_common == 'unknown' and detected_colors['red'] == 0 and detected_colors['green'] == 0:
+            return 'green'  # Default to green if no clear detection
+        return most_common
+    
+    def _analyze_hsv_colors(self, roi):
+        """Analyze HSV colors in a region of interest"""
         # Convert to HSV for better color detection
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
         
