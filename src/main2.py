@@ -268,6 +268,12 @@ while True:
         continue
 
     frame = cv2.resize(frame, (frame_width, frame_height))
+    
+    # Re-analyze traffic lights every 10 seconds (every 300 frames at 30fps)
+    traffic_lights, pedestrian_zones = preprocessor.analyze_scene(frame, frame_count)
+    visualizer.set_traffic_lights(traffic_lights)
+    red_light_detector.set_traffic_light_regions(traffic_lights)
+    
     visualizer.draw_line(frame)
     
     # Draw detected traffic lights and pedestrian zones

@@ -26,7 +26,7 @@ def get_youtube_direct_url(youtube_url):
             YoutubeDL = getattr(youtube_dl, "YoutubeDL")
             print("   Using: youtube_dl (fallback)")
         except (ImportError, ModuleNotFoundError):
-            print("   ❌ Neither yt_dlp nor youtube_dl installed!")
+            print("   Neither yt_dlp nor youtube_dl installed!")
             print("   Install with: pip install yt-dlp")
             return None
 

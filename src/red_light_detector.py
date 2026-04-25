@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from collections import defaultdict
+from collections import defaultdict, deque
 
 class RedLightDetector:
     """
@@ -35,6 +35,13 @@ class RedLightDetector:
         self.light_state = 'green'  # green, red, yellow, unknown
         self.light_state_history = []
         self.state_change_frames = 0
+        # Temporal smoothing buffer for stability (require 2 consecutive detections)
+        self._recent_states = deque(maxlen=5)
+        self._state_confirm_required = 2
+        # Brightness and area thresholds for robust detection
+        self._brightness_threshold = 140
+        self._area_ratio_threshold = 0.01
+        self._min_pixel_count = 60
         
         # Track vehicles crossing the stop line
         self.stop_line_y = int(frame_height * 0.5)  # Usually middle of frame
@@ -49,7 +56,7 @@ class RedLightDetector:
         
     def detect_light_color(self, frame):
         """
-        Detect traffic light color using HSV color space.
+        Detect traffic light color using HSV color space with temporal smoothing.
         Uses detected traffic light regions if available, otherwise uses default region.
         
         Args:
@@ -60,10 +67,17 @@ class RedLightDetector:
         """
         # Use detected traffic lights if available
         if self.detected_traffic_lights:
-            return self._detect_from_regions(frame, self.detected_traffic_lights)
+            detection = self._detect_from_regions(frame, self.detected_traffic_lights)
         else:
             # Fallback to default region
-            return self._detect_from_region(frame, self.light_region)
+            detection = self._detect_from_region(frame, self.light_region)
+        
+        # Temporal smoothing: require multiple matching detections before switching
+        self._recent_states.append(detection)
+        if self._recent_states.count(detection) >= self._state_confirm_required:
+            self.light_state = detection
+        
+        return self.light_state
     
     def _detect_from_region(self, frame, region):
         """Detect light color from a single region"""
@@ -76,7 +90,15 @@ class RedLightDetector:
         if roi.size == 0:
             return 'unknown'
         
-        return self._analyze_hsv_colors(roi)
+        # Create circular mask around center to focus on light bulb
+        h, w = roi.shape[:2]
+        cx_rel = w // 2
+        cy_rel = h // 2
+        radius = max(4, min(w, h) // 6)
+        mask = np.zeros((h, w), dtype=np.uint8)
+        cv2.circle(mask, (cx_rel, cy_rel), int(radius), 255, -1)
+        
+        return self._analyze_hsv_colors(roi, mask=mask)
     
     def _detect_from_regions(self, frame, traffic_lights):
         """Detect light color from multiple detected traffic light positions"""
@@ -85,65 +107,103 @@ class RedLightDetector:
         for tl in traffic_lights:
             x, y, radius = tl["x"], tl["y"], tl["radius"]
             
-            # Extract circular region around traffic light
+            # Extract region around traffic light
             y1 = max(0, y - radius - 10)
             y2 = min(frame.shape[0], y + radius + 10)
             x1 = max(0, x - radius - 10)
             x2 = min(frame.shape[1], x + radius + 10)
             
             roi = frame[y1:y2, x1:x2]
-            
             if roi.size == 0:
                 continue
             
-            color = self._analyze_hsv_colors(roi)
+            # Circular mask to focus on the lit area and reduce background influence
+            h, w = roi.shape[:2]
+            cx_rel = int((x - x1))
+            cy_rel = int((y - y1))
+            mask = np.zeros((h, w), dtype=np.uint8)
+            cv2.circle(mask, (cx_rel, cy_rel), int(radius) + 3, 255, -1)
+            
+            color = self._analyze_hsv_colors(roi, mask=mask)
             detected_colors[color] += 1
         
-        # Return most frequently detected color
+        # Return most frequently detected color among detected traffic lights
         most_common = max(detected_colors, key=detected_colors.get)
         if most_common == 'unknown' and detected_colors['red'] == 0 and detected_colors['green'] == 0:
             return 'green'  # Default to green if no clear detection
         return most_common
     
-    def _analyze_hsv_colors(self, roi):
-        """Analyze HSV colors in a region of interest"""
-        # Convert to HSV for better color detection
+    def _analyze_hsv_colors(self, roi, mask=None):
+        """
+        Analyze HSV colors in a region of interest with an optional circular mask.
+        Uses brightness filtering and area ratio checks to avoid background bias.
+        Prevents truck brake lights and yellow backgrounds from causing false detections.
+        """
         hsv = cv2.cvtColor(roi, cv2.COLOR_BGR2HSV)
         
-        # Define color ranges in HSV
-        # Red light (hue wraps around, so we check two ranges)
-        lower_red1 = np.array([0, 100, 100])
+        # Color ranges (tuned for saturated/bright light bulbs)
+        lower_red1 = np.array([0, 100, 120])
         upper_red1 = np.array([10, 255, 255])
-        lower_red2 = np.array([170, 100, 100])
+        lower_red2 = np.array([170, 100, 120])
         upper_red2 = np.array([180, 255, 255])
-        
-        # Green light
-        lower_green = np.array([35, 100, 100])
+        lower_green = np.array([35, 100, 120])
         upper_green = np.array([85, 255, 255])
-        
-        # Yellow light
-        lower_yellow = np.array([15, 100, 100])
+        lower_yellow = np.array([20, 100, 120])
         upper_yellow = np.array([35, 255, 255])
         
-        # Create masks
         mask_red = cv2.inRange(hsv, lower_red1, upper_red1) | cv2.inRange(hsv, lower_red2, upper_red2)
         mask_green = cv2.inRange(hsv, lower_green, upper_green)
         mask_yellow = cv2.inRange(hsv, lower_yellow, upper_yellow)
         
-        # Count pixels for each color
-        red_pixels = cv2.countNonZero(mask_red)
-        green_pixels = cv2.countNonZero(mask_green)
-        yellow_pixels = cv2.countNonZero(mask_yellow)
+        # Ensure mask is valid
+        h, w = hsv.shape[:2]
+        if mask is None:
+            mask = np.ones((h, w), dtype=np.uint8) * 255
         
-        # Determine dominant color
-        if red_pixels > green_pixels and red_pixels > yellow_pixels and red_pixels > 100:
-            return 'red'
-        elif green_pixels > red_pixels and green_pixels > yellow_pixels and green_pixels > 100:
-            return 'green'
-        elif yellow_pixels > red_pixels and yellow_pixels > green_pixels and yellow_pixels > 100:
-            return 'yellow'
-        else:
+        # Brightness filter to focus on lit areas (reduce background influence)
+        v = hsv[:, :, 2]
+        bright_mask = (v >= self._brightness_threshold).astype(np.uint8) * 255
+        combined_mask = cv2.bitwise_and(mask, bright_mask)
+        
+        red_final = cv2.bitwise_and(mask_red, mask_red, mask=combined_mask)
+        green_final = cv2.bitwise_and(mask_green, mask_green, mask=combined_mask)
+        yellow_final = cv2.bitwise_and(mask_yellow, mask_yellow, mask=combined_mask)
+        
+        red_pixels = cv2.countNonZero(red_final)
+        green_pixels = cv2.countNonZero(green_final)
+        yellow_pixels = cv2.countNonZero(yellow_final)
+        
+        masked_area = max(1, cv2.countNonZero(mask))
+        red_ratio = red_pixels / masked_area
+        green_ratio = green_pixels / masked_area
+        yellow_ratio = yellow_pixels / masked_area
+        
+        counts = {'red': red_pixels, 'green': green_pixels, 'yellow': yellow_pixels}
+        ratios = {'red': red_ratio, 'green': green_ratio, 'yellow': yellow_ratio}
+        
+        # Primary decision: require minimum ratio and minimum pixel count
+        best = max(ratios, key=ratios.get)
+        if ratios[best] >= self._area_ratio_threshold and counts[best] >= self._min_pixel_count:
+            return best
+        
+        # Fallback: check raw counts within the circular mask (no brightness filter)
+        red_raw = cv2.bitwise_and(mask_red, mask_red, mask=mask)
+        green_raw = cv2.bitwise_and(mask_green, mask_green, mask=mask)
+        yellow_raw = cv2.bitwise_and(mask_yellow, mask_yellow, mask=mask)
+        red_raw_cnt = cv2.countNonZero(red_raw)
+        green_raw_cnt = cv2.countNonZero(green_raw)
+        yellow_raw_cnt = cv2.countNonZero(yellow_raw)
+        raw_total = red_raw_cnt + green_raw_cnt + yellow_raw_cnt
+        
+        if raw_total == 0:
             return 'unknown'
+        
+        raw_norm = {'red': red_raw_cnt / raw_total, 'green': green_raw_cnt / raw_total, 'yellow': yellow_raw_cnt / raw_total}
+        raw_best = max(raw_norm, key=raw_norm.get)
+        if raw_norm[raw_best] > 0.6 and max(red_raw_cnt, green_raw_cnt, yellow_raw_cnt) > 50:
+            return raw_best
+        
+        return 'unknown'
     
     def update(self, frame, vehicle_id, cx, cy, vehicle_type='car'):
         """
